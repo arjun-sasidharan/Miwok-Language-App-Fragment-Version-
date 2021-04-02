@@ -1,23 +1,29 @@
 package com.example.android.miwok;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+
+import androidx.fragment.app.Fragment;
+
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class FamilyActivity extends AppCompatActivity {
-    MediaPlayer mMediaPlayer;
 
+public class NumberFragment extends Fragment {
+
+    MediaPlayer mMediaPlayer;
     AudioManager mAudioManager;
 
     /**
-     * instance of media.oncompletion class
+     * instance of media.onCompletion class
      */
     MediaPlayer.OnCompletionListener mCompletionListener = new MediaPlayer.OnCompletionListener() {
         @Override
@@ -25,8 +31,6 @@ public class FamilyActivity extends AppCompatActivity {
             releaseMediaPlayer();
         }
     };
-
-
 
     /**
      * Instance of onAudioFocusChangeListener
@@ -55,42 +59,52 @@ public class FamilyActivity extends AppCompatActivity {
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.word_list);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View rootView = inflater.inflate(R.layout.word_list, container, false);
 
         //creating AudioManger object instance
-        mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        mAudioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+        //Array of Numbers
+        final ArrayList<Word> numberList = new ArrayList<Word>();
 
-        //Creating ArrayList of Word Type to store family members words
-       final ArrayList<Word> familyList = new ArrayList<Word>();
-        //Adding words to Array list familyList
-        familyList.add( new Word("father","әpә", R.drawable.family_father, R.raw.family_father));
-        familyList.add( new Word("mother","әṭa", R.drawable.family_mother, R.raw.family_mother));
-        familyList.add( new Word("son","angsi", R.drawable.family_son, R.raw.family_son));
-        familyList.add( new Word("daughter","tune", R.drawable.family_daughter, R.raw.family_daughter));
-        familyList.add( new Word("older brother","taachi", R.drawable.family_older_brother, R.raw.family_older_brother));
-        familyList.add( new Word("younger brother","chalitti", R.drawable.family_younger_brother, R.raw.family_younger_brother));
-        familyList.add( new Word("older sister","teṭe", R.drawable.family_older_sister, R.raw.family_older_sister));
-        familyList.add( new Word("younger sister","kolliti", R.drawable.family_younger_sister, R.raw.family_younger_sister));
-        familyList.add( new Word("grandmother","ama", R.drawable.family_grandmother, R.raw.family_grandmother));
-        familyList.add( new Word("grandfather","paapa", R.drawable.family_grandfather, R.raw.family_grandfather));
+        //Creating an object of class Word
+        // adding the values to the words ArrayList which datatype is Word
+        numberList.add(new Word("one","lutti", R.drawable.number_one, R.raw.number_one));
+        numberList.add(new Word("two","otiiko",R.drawable.number_two, R.raw.number_two));
+        numberList.add(new Word("three","tolookosu",R.drawable.number_three, R.raw.number_three));
+        numberList.add(new Word("four","oyyisa",R.drawable.number_four, R.raw.number_four));
+        numberList.add(new Word("five","massokka",R.drawable.number_five, R.raw.number_five));
+        numberList.add(new Word("six","temmokka",R.drawable.number_six, R.raw.number_six));
+        numberList.add(new Word("seven","kenekaku",R.drawable.number_seven, R.raw.number_seven));
+        numberList.add(new Word("eight","kawinta",R.drawable.number_eight, R.raw.number_eight));
+        numberList.add(new Word("nine","wo’e",R.drawable.number_nine, R.raw.number_nine));
+        numberList.add(new Word("ten","na’aacha",R.drawable.number_ten, R.raw.number_ten));
 
-        //Creating object of custom Adapter WordAdapter
-        WordAdapter iteamAdapter = new WordAdapter(this,familyList, R.color.category_family);
+        //Creating ArrayAdapter Object itemAdapter
+        WordAdapter itemAdapter = new WordAdapter(getActivity(),numberList,R.color.category_numbers);
 
-        //Creating LIstView reference
-        ListView listView = (ListView) findViewById(R.id.list);
-        listView.setAdapter(iteamAdapter);
+        //Creating ListView Object listView
+        ListView listView = rootView.findViewById(R.id.list);
+        listView.setAdapter(itemAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Word clickedWord = familyList.get(position);   //getting the word on which the user clicked
+                //getting the clickedWord on which the user clicked
+                Word clickedWord = numberList.get(position);
+
+                // current state print in logs, used for debugging
+                Log.v("Numbers Activity", "Current word : "+ clickedWord);
+
+
                 //Release the mediaPlayer every time before starting a new mediaPlayer
                 /**
-                 * when user clicks multiple views at same time , even if the first one's audio is not completely finished ( CASE: resource release
-                 * onCompletion ) , the resource released when new view clicked and new mediaPlayer is starting
+                 * when user clicks multiple views at same time,
+                 * even if the first one's audio is not completely finished
+                 * (CASE: resource release onCompletion),
+                 * the resource released when new view clicked and new mediaPlayer is starting
                  */
                 releaseMediaPlayer();
 
@@ -100,20 +114,21 @@ public class FamilyActivity extends AppCompatActivity {
 
                 if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
                     // we have audio focus now
-                    mMediaPlayer = MediaPlayer.create(FamilyActivity.this,
+                    mMediaPlayer = MediaPlayer.create(getActivity(),
                             clickedWord.getAudioResourceId());
                     //start the media player to play
                     mMediaPlayer.start();
                     //set an listener to release media player after completion
                     mMediaPlayer.setOnCompletionListener(mCompletionListener);
                 }
+
             }
         });
-
+    return rootView;
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
         // releasing mediaPlayer when the user change the app or gone to HOME Screen (onStop)
         releaseMediaPlayer();
@@ -137,6 +152,7 @@ public class FamilyActivity extends AppCompatActivity {
             // Regardless of whether or not we were granted audio focus, abandon it. This also
             // unregisters the AudioFocusChangeListener so we don't get anymore callbacks.
             mAudioManager.abandonAudioFocus(mOnAudioFocusChangeListener);
+
         }
     }
 }

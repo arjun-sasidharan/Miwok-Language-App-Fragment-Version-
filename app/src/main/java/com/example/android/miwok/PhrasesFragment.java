@@ -1,17 +1,23 @@
 package com.example.android.miwok;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+
+import androidx.fragment.app.Fragment;
+
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class PhrasesActivity extends AppCompatActivity {
+
+public class PhrasesFragment extends Fragment {
+
     MediaPlayer mMediaPlayer;
 
     AudioManager mAudioManager;
@@ -54,13 +60,15 @@ public class PhrasesActivity extends AppCompatActivity {
         }
     };
 
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.word_list);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View rootView = inflater.inflate(R.layout.word_list, container, false);
 
         //creating AudioManger object instance
-        mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        mAudioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
 
         //Creating ArrayList of Word Type to store phrases
         final ArrayList<Word> phrasesList = new ArrayList<>();
@@ -76,9 +84,9 @@ public class PhrasesActivity extends AppCompatActivity {
         phrasesList.add( new Word("Come here.","әnni'nem", R.raw.phrase_come_here));
 
         //Creating WordAdapter Object
-        WordAdapter itemAdapter = new WordAdapter(this,phrasesList,R.color.category_phrases);
+        WordAdapter itemAdapter = new WordAdapter(getActivity(),phrasesList,R.color.category_phrases);
         //Creating ListView reference
-        ListView listView = (ListView) findViewById(R.id.list);
+        ListView listView = (ListView) rootView.findViewById(R.id.list);
         listView.setAdapter(itemAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -98,7 +106,7 @@ public class PhrasesActivity extends AppCompatActivity {
 
                 if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
                     // we have audio focus now
-                    mMediaPlayer = MediaPlayer.create(PhrasesActivity.this,
+                    mMediaPlayer = MediaPlayer.create(getActivity(),
                             clickedWord.getAudioResourceId());
                     //start the media player to play
                     mMediaPlayer.start();
@@ -107,10 +115,11 @@ public class PhrasesActivity extends AppCompatActivity {
                 }
             }
         });
+        return rootView;
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
         // releasing mediaPlayer when the user change the app or gone to HOME Screen (onStop)
         releaseMediaPlayer();
@@ -136,4 +145,5 @@ public class PhrasesActivity extends AppCompatActivity {
             mAudioManager.abandonAudioFocus(mOnAudioFocusChangeListener);
         }
     }
+
 }

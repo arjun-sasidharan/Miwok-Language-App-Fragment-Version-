@@ -1,17 +1,23 @@
 package com.example.android.miwok;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+
+import androidx.fragment.app.Fragment;
+
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class ColorsActivity extends AppCompatActivity {
+
+public class ColorsFragment extends Fragment {
+
     MediaPlayer mMediaPlayer;
 
     AudioManager mAudioManager;
@@ -36,7 +42,8 @@ public class ColorsActivity extends AppCompatActivity {
         public void onAudioFocusChange(int focusChange) {
             if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
                     focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
-                // Pause playback because your Audio Focus was temporarily stolen, but will be back soon. i.e. for a phone call
+                // Pause playback because your Audio Focus was temporarily stolen,
+                // but will be back soon. i.e. for a phone call
                 mMediaPlayer.pause();
                 mMediaPlayer.seekTo(0);
 
@@ -55,15 +62,16 @@ public class ColorsActivity extends AppCompatActivity {
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.word_list);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View rootView =  inflater.inflate(R.layout.word_list, container, false);
 
         //creating AudioManger object instance
-        mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        mAudioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
 
         //creating ArrayList of Word Type for colors
-       final ArrayList<Word> colorsList = new ArrayList<>();
+        final ArrayList<Word> colorsList = new ArrayList<>();
         colorsList.add( new Word("red","weṭeṭṭi", R.drawable.color_red, R.raw.color_red));
         colorsList.add( new Word("green","chokokki", R.drawable.color_green, R.raw.color_green));
         colorsList.add( new Word("brown","ṭakaakki", R.drawable.color_brown, R.raw.color_brown));
@@ -74,9 +82,9 @@ public class ColorsActivity extends AppCompatActivity {
         colorsList.add( new Word("mustard yellow","chiwiiṭә", R.drawable.color_mustard_yellow, R.raw.color_mustard_yellow));
 
         //Creating WordAdapter object
-        WordAdapter itemAdapter = new WordAdapter(this,colorsList,R.color.category_colors);
+        WordAdapter itemAdapter = new WordAdapter(getActivity(),colorsList,R.color.category_colors);
         //Creating ListView reference
-        ListView listView = (ListView) findViewById(R.id.list);
+        ListView listView = (ListView) rootView.findViewById(R.id.list);
         listView.setAdapter(itemAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -86,8 +94,10 @@ public class ColorsActivity extends AppCompatActivity {
 
                 //Release the mediaPlayer every time before starting a new mediaPlayer
                 /**
-                 * when user clicks multiple views at same time , even if the first one's audio is not completely finished ( CASE: resource release
-                 * onCompletion ) , the resource released when new view clicked and new mediaPlayer is starting
+                 * when user clicks multiple views at same time ,
+                 * even if the first one's audio is not completely finished
+                 * ( CASE: resource release onCompletion ) ,
+                 * the resource released when new view clicked and new mediaPlayer is starting
                  */
                 releaseMediaPlayer();
 
@@ -97,7 +107,7 @@ public class ColorsActivity extends AppCompatActivity {
 
                 if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
                     // we have audio focus now
-                    mMediaPlayer = MediaPlayer.create(ColorsActivity.this,
+                    mMediaPlayer = MediaPlayer.create(getActivity(),
                             clickedWord.getAudioResourceId());
                     //start the media player to play
                     mMediaPlayer.start();
@@ -106,10 +116,13 @@ public class ColorsActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+        return rootView;
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
         // releasing mediaPlayer when the user change the app or gone to HOME Screen (onStop)
         releaseMediaPlayer();
